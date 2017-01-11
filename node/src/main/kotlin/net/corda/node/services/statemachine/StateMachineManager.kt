@@ -65,7 +65,8 @@ class StateMachineManager(val serviceHub: ServiceHubInternal,
                           tokenizableServices: List<Any>,
                           val checkpointStorage: CheckpointStorage,
                           val executor: AffinityExecutor,
-                          val database: Database) {
+                          val database: Database,
+                          @VisibleForTesting val unfinishedFibers: ReusableLatch = ReusableLatch()) {
 
     inner class FiberScheduler : FiberExecutorScheduler("Same thread scheduler", executor)
 
@@ -98,8 +99,7 @@ class StateMachineManager(val serviceHub: ServiceHubInternal,
     @Volatile private var stopping = false
     // How many Fibers are running and not suspended.  If zero and stopping is true, then we are halted.
     private val liveFibers = ReusableLatch()
-    @VisibleForTesting
-    val unfinishedFibers = ReusableLatch()
+
 
     // Monitoring support.
     private val metrics = serviceHub.monitoringService.metrics
